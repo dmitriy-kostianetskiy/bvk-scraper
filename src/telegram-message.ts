@@ -13,8 +13,8 @@ export function formatResultsMessage(results: ParsePageResultItem[]): string {
     const titleLabel = `<b>Naslov:</b> ${titleValue}`;
     const detailsValue = escapeHtml(
       item.text || 'Nema dodatnih detalja.',
-    ).replace(/\n/g, '<br/>');
-    const detailsLabel = `<b>Detalji:</b><br/>${detailsValue}`;
+    ).replace(/\n/g, '<br>');
+    const detailsLabel = `<b>Detalji:</b><br>${detailsValue}`;
 
     return [dateLabel, titleLabel, detailsLabel].join('\n');
   });
