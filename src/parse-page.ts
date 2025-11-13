@@ -7,6 +7,12 @@ export type ParsePageResultItem = {
   title: string;
   text: string;
   html: string;
+  addresses: ParsedAddress[];
+};
+
+export type ParsedAddress = {
+  label: string;
+  url: string;
 };
 
 const QUESTION_SELECTOR = 'section[itemtype="https://schema.org/Question"]';
@@ -25,10 +31,10 @@ export function parsePage(html: string): ParsePageResultItem[] {
     }
 
     const rawHtml = ($answer.html() ?? '').trim();
-    const { title, text } = extractTitleAndText($answer, $);
+    const { title, text, addresses } = extractTitleTextAndAddresses($answer, $);
     const date = extractDate($section);
 
-    if (!title && !text && !date) {
+    if (!title && !text && !date && addresses.length === 0) {
       return;
     }
 
@@ -37,16 +43,17 @@ export function parsePage(html: string): ParsePageResultItem[] {
       title,
       text,
       html: rawHtml,
+      addresses,
     });
   });
 
   return results;
 }
 
-function extractTitleAndText(
+function extractTitleTextAndAddresses(
   $answer: Cheerio<Element>,
   root: CheerioAPI,
-): { title: string; text: string } {
+): { title: string; text: string; addresses: ParsedAddress[] } {
   const answerClone = $answer.clone();
   const heading = answerClone
     .find('h1')
@@ -59,9 +66,35 @@ function extractTitleAndText(
     heading.remove();
   }
 
+  const addresses = extractAddresses(answerClone, root);
   const text = normalizeWhitespace(answerClone.text());
 
-  return { title, text };
+  return { title, text, addresses };
+}
+
+function extractAddresses(
+  $context: Cheerio<Element>,
+  root: CheerioAPI,
+): ParsedAddress[] {
+  const addresses: ParsedAddress[] = [];
+
+  $context.find('ul li').each((_i, li) => {
+    const label = normalizeWhitespace(root(li).text());
+    if (!label) {
+      return;
+    }
+
+    const url = buildMapsUrl(label);
+    addresses.push({ label, url });
+  });
+
+  return addresses;
+}
+
+function buildMapsUrl(label: string): string {
+  const query = label.replace(/[:–]/g, ' ').replace(/\s+/g, ' ').trim();
+  const encoded = encodeURIComponent(query).replace(/%20/g, '+');
+  return `https://www.google.com/maps/place/${encoded}`;
 }
 
 function extractDate($section: Cheerio<Element>): Date | null {
