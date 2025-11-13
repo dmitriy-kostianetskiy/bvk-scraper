@@ -13,8 +13,11 @@ export function formatResultsMessage(results: ParsePageResultItem[]): string {
     const titleLabel = `<b>Naslov:</b> ${titleValue}`;
     const detailsValue = escapeHtml(item.text || 'Nema dodatnih detalja.');
     const detailsLabel = `<b>Detalji:</b>\n${detailsValue}`;
+    const addressesLabel = formatAddresses(item.addresses ?? []);
 
-    return [dateLabel, titleLabel, detailsLabel].join('\n');
+    return [dateLabel, titleLabel, detailsLabel, addressesLabel]
+      .filter((value) => value.length > 0)
+      .join('\n');
   });
 
   const body = sections.join('\n\n');
@@ -42,4 +45,18 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function formatAddresses(addresses: ParsePageResultItem['addresses']): string {
+  if (addresses.length === 0) {
+    return '';
+  }
+
+  const lines = addresses.map(({ label, url }) => {
+    const safeLabel = escapeHtml(label);
+    const safeUrl = escapeHtml(url);
+    return `• <a href="${safeUrl}">${safeLabel}</a>`;
+  });
+
+  return `<b>Adrese:</b>\n${lines.join('\n')}`;
 }
