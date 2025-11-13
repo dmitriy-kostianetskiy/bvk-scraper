@@ -16,7 +16,8 @@ void test('formatResultsMessage returns HTML with link footer', () => {
 
   assert.match(message, /<b>Datum:<\/b> 13\.11\.2025/);
   assert.match(message, /<b>Naslov:<\/b> До 22:00/);
-  assert.match(message, /Стари град: Булевар деспота Стефана 9<br>/);
+  assert.match(message, /Стари град: Булевар деспота Стефана 9/);
+  assert.match(message, /Detalji:<\/b>\nСтари град/);
   assert.match(
     message,
     /Više detalja ovde: <a href="https:\/\/www\.bvk\.rs\/kvarovi-na-mrezi">ovde<\/a>/,

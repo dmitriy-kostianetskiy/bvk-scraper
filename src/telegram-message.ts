@@ -11,10 +11,8 @@ export function formatResultsMessage(results: ParsePageResultItem[]): string {
     const dateLabel = `<b>Datum:</b> ${escapeHtml(formatDate(item.date))}`;
     const titleValue = item.title ? escapeHtml(item.title) : 'Nepoznato';
     const titleLabel = `<b>Naslov:</b> ${titleValue}`;
-    const detailsValue = escapeHtml(
-      item.text || 'Nema dodatnih detalja.',
-    ).replace(/\n/g, '<br>');
-    const detailsLabel = `<b>Detalji:</b><br>${detailsValue}`;
+    const detailsValue = escapeHtml(item.text || 'Nema dodatnih detalja.');
+    const detailsLabel = `<b>Detalji:</b>\n${detailsValue}`;
 
     return [dateLabel, titleLabel, detailsLabel].join('\n');
   });
