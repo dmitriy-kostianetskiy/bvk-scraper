@@ -26,8 +26,7 @@ void test('formatResultsMessage returns HTML with link footer', () => {
 
   assert.match(message, /<b>Datum:<\/b> 13\.11\.2025/);
   assert.match(message, /<b>Naslov:<\/b> До 22:00/);
-  assert.match(message, /Стари град: Булевар деспота Стефана 9/);
-  assert.match(message, /Detalji:<\/b>\nСтари град/);
+  assert.ok(!message.includes('<b>Detalji:</b>'));
   assert.match(
     message,
     /<b>Adrese:<\/b>\n• <a href="https:\/\/www\.google\.com\/maps\/place\/[^>]+">Стари град: Булевар деспота Стефана 9<\/a>/,
@@ -64,6 +63,19 @@ void test('formatResultsMessage escapes HTML special characters', () => {
     message,
     /<a href="https:\/\/maps\.test\/foo\?bar=&quot;baz&quot;">Label with &lt;tag&gt;<\/a>/,
   );
+});
+
+void test('formatResultsMessage keeps non-address details when present', () => {
+  const mixed: ParsePageResultItem = {
+    ...baseResult,
+    text: 'Информације о радовима\nСтари град: Булевар деспота Стефана 9',
+  };
+
+  const message = formatResultsMessage([mixed]);
+
+  assert.match(message, /<b>Detalji:<\/b>\nИнформације о радовима/);
+  const [beforeAddresses] = message.split('<b>Adrese:</b>');
+  assert.ok(!beforeAddresses.includes('Стари град: Булевар деспота Стефана 9'));
 });
 
 void test('formatResultsMessage handles empty dataset', () => {

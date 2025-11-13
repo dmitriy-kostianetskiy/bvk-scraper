@@ -11,8 +11,14 @@ export function formatResultsMessage(results: ParsePageResultItem[]): string {
     const dateLabel = `<b>Datum:</b> ${escapeHtml(formatDate(item.date))}`;
     const titleValue = item.title ? escapeHtml(item.title) : 'Nepoznato';
     const titleLabel = `<b>Naslov:</b> ${titleValue}`;
-    const detailsValue = escapeHtml(item.text || 'Nema dodatnih detalja.');
-    const detailsLabel = `<b>Detalji:</b>\n${detailsValue}`;
+    const cleanedDetails = stripAddressOnlyLines(
+      item.text ?? '',
+      item.addresses ?? [],
+    );
+    const detailsLabel = buildDetailsSection(
+      cleanedDetails,
+      item.addresses ?? [],
+    );
     const addressesLabel = formatAddresses(item.addresses ?? []);
 
     return [dateLabel, titleLabel, detailsLabel, addressesLabel]
@@ -59,4 +65,56 @@ function formatAddresses(addresses: ParsePageResultItem['addresses']): string {
   });
 
   return `<b>Adrese:</b>\n${lines.join('\n')}`;
+}
+
+function buildDetailsSection(
+  details: string,
+  addresses: ParsePageResultItem['addresses'],
+): string {
+  if (details) {
+    return `<b>Detalji:</b>\n${escapeHtml(details)}`;
+  }
+
+  if (addresses.length === 0) {
+    return `<b>Detalji:</b>\n${escapeHtml('Nema dodatnih detalja.')}`;
+  }
+
+  return '';
+}
+
+function stripAddressOnlyLines(
+  text: string,
+  addresses: ParsePageResultItem['addresses'],
+): string {
+  if (!text) {
+    return '';
+  }
+
+  const labelSet = new Set(
+    addresses.map((address) => normalizeLine(address.label)),
+  );
+  const addressMarkers = new Set(['adrese:', 'адресе:', 'adresa:', 'адреса:']);
+
+  const filtered = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .filter((line) => {
+      const normalized = normalizeLine(line);
+      if (labelSet.has(normalized)) {
+        return false;
+      }
+
+      if (addressMarkers.has(normalized.toLowerCase())) {
+        return false;
+      }
+
+      return true;
+    });
+
+  return filtered.join('\n');
+}
+
+function normalizeLine(line: string): string {
+  return line.replace(/\s+/g, ' ').trim();
 }
