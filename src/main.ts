@@ -6,20 +6,8 @@ import { sendResultsToTelegram } from './telegram.js';
 
 await Actor.init();
 
-type Input = {
-  url: string;
-};
-
-const input = await Actor.getInput<Input>();
-
-if (!input) {
-  throw new Error('Input is missing!');
-}
-
-const { url } = input;
-
 // Fetch the HTML content of the page.
-const response = await axios.get(url);
+const response = await axios.get(process.env.BVK_URL);
 
 // Extract all headings from the page (tag name and text).
 const results = parsePage(response.data);

@@ -1,87 +1,111 @@
-## Scrape single-page in TypeScript template
+# BVK Scraper
 
-<!-- This is an Apify template readme -->
+Typed Apify Actor that scrapes [Beogradski Voodovod i Kanalizacija](https://www.bvk.rs/kvarovi-na-mrezi/) outage announcements, normalizes the data, and optionally forwards the results to a Telegram chat.
 
-A template for scraping data from a single web page in TypeScript (Node.js). The URL of the web page is passed in via input, which is defined by the [input schema](https://docs.apify.com/platform/actors/development/input-schema). The template uses the [Axios client](https://axios-http.com/docs/intro) to get the HTML of the page and the [Cheerio library](https://cheerio.js.org/) to parse the data from it. The data are then stored in a [dataset](https://docs.apify.com/sdk/js/docs/guides/result-storage#dataset) where you can easily access them.
+## Key capabilities
 
-The scraped data in this template are page headings but you can easily edit the code to scrape whatever you want from the page.
+- Parse [Beogradski Voodovod i Kanalizacija](https://www.bvk.rs/kvarovi-na-mrezi/) HTML and emit structured outage records.
+- Extract street-level addresses from bullet lists, generate Google Maps `https://www.google.com/maps/place/...` links, and avoid duplicating plain text when links are shown.
+- Format HTML-safe Telegram messages with Serbian localization, trimming empty sections automatically.
+- Persist results to the Apify default dataset for further processing or download.
 
-## Included features
+## Requirements
 
-- **[Apify SDK](https://docs.apify.com/sdk/js/)** - a toolkit for building [Actors](https://apify.com/actors)
-- **[Input schema](https://docs.apify.com/platform/actors/development/input-schema)** - define and easily validate a schema for your Actor's input
-- **[Dataset](https://docs.apify.com/sdk/js/docs/guides/result-storage#dataset)** - store structured data where each object stored has the same attributes
-- **[Axios client](https://axios-http.com/docs/intro)** - promise-based HTTP Client for Node.js and the browser
-- **[Cheerio](https://cheerio.js.org/)** - library for parsing and manipulating HTML and XML
+- Node.js 18 or newer (see `package.json` engines field).
+- npm (ships with Node) for dependency management.
+- [direnv](https://direnv.net/) (optional, recommended for auto-loading `.env`).
 
-## How it works
+## Installation
 
-1. `Actor.getInput()` gets the input where the page URL is defined
-2. `axios.get(url)` fetches the page
-3. `cheerio.load(response.data)` loads the page data and enables parsing the headings
-4. This parses the headings from the page and here you can edit the code to parse whatever you need from the page
+```bash
+npm install
+```
 
-    ```javascript
-    $("h1, h2, h3, h4, h5, h6").each((_i, element) => {...});
-    ```
+## Local usage
 
-5. `Actor.pushData(headings)` stores the headings in the dataset
+1. **Prepare environment variables**
 
-## Resources
+```bash
+cp .env.example .env
+```
 
-- [Web scraping in Node.js with Axios and Cheerio](https://blog.apify.com/web-scraping-with-axios-and-cheerio/)
-- [Web scraping with Cheerio in 2023](https://blog.apify.com/web-scraping-with-cheerio/)
-- [Video tutorial](https://www.youtube.com/watch?v=yTRHomGg9uQ) on building a scraper using CheerioCrawler
-- [Written tutorial](https://docs.apify.com/academy/web-scraping-for-beginners/challenge) on building a scraper using CheerioCrawler
-- [Integration with Zapier](https://apify.com/integrations), Make, Google Drive, and others
-- [Video guide on getting scraped data using Apify API](https://www.youtube.com/watch?v=ViYYDHSBAKM)
-- A short guide on how to build web scrapers using code templates:
+Update the placeholders:
 
-[web scraper template](https://www.youtube.com/watch?v=u-i-Korzf8w)
+- `BVK_URL` – source page for outages (defaults to the official BVK outage page).
+- `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` – required only if you want Telegram notifications.
 
+2. **Enable automatic env loading with direnv (optional but handy)**
 
-## Getting started
+```bash
+brew install direnv               # or use your package manager
+echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc
+direnv allow
+```
 
-For complete information [see this article](https://docs.apify.com/platform/actors/development#build-actor-at-apify-console). In short, you will:
+The committed `.envrc` uses `dotenv` so every time you `cd` into the repo, values from `.env` are exported automatically.
 
-1. Build the Actor
-2. Run the Actor
+3. **Run the actor locally**
 
-## Pull the Actor for local development
+- Login into Apify (first time only):
 
-If you would like to develop locally, you can pull the existing Actor from Apify console using Apify CLI:
+  ```bash
+  apify login
+  ```
 
-1. Install `apify-cli`
+- Pull Actor:
 
-    **Using Homebrew**
+  ```bash
+  apify pull %ACTOR_ID%
+  ```
 
-    ```bash
-    brew install apify-cli
-    ```
+- Run Apify runtime
 
-    **Using NPM**
+  ```bash
+  npx apify run
+  ```
 
-    ```bash
-    npm -g install apify-cli
-    ```
+The actor fetches the configured URL, parses outages, sends the Telegram summary when enabled, and pushes structured items to `storage/datasets/default`.
 
-2. Pull the Actor by its unique `<ActorId>`, which is one of the following:
-    - unique name of the Actor to pull (e.g. "apify/hello-world")
-    - or ID of the Actor to pull (e.g. "E2jjCZBezvAZnX8Rb")
+## Testing
 
-    You can find both by clicking on the Actor title at the top of the page, which will open a modal containing both Actor unique name and Actor ID.
+Unit tests use the Node.js test runner via `tsx`:
 
-    This command will copy the Actor into the current directory on your local machine.
+```bash
+npx tsx --test src/parse-page.test.ts src/telegram-message.test.ts src/telegram.test.ts
+```
 
-    ```bash
-    apify pull <ActorId>
-    ```
+## Output structure
 
-## Documentation reference
+Each dataset item (`ParsePageResultItem`) contains:
 
-To learn more about Apify and Actors, take a look at the following resources:
+- `date`: Outage date (`Date | null`).
+- `title`: Announcement heading (string, may be empty).
+- `text`: Remaining descriptive text with address-only lines removed.
+- `html`: Raw HTML snippet for reference.
+- `addresses`: Array of `{ label, url }`, where `url` is a Google Maps link derived from the label.
 
-- [Apify SDK for JavaScript documentation](https://docs.apify.com/sdk/js)
-- [Apify SDK for Python documentation](https://docs.apify.com/sdk/python)
-- [Apify Platform documentation](https://docs.apify.com/platform)
-- [Join our developer community on Discord](https://discord.com/invite/jyEM2PRvMU)
+Telegram messages follow this shape:
+
+```
+Datum: DD.MM.YYYY
+Naslov: …
+Detalji: …            (only when non-address text is available)
+Adrese:
+• Label → Google Maps link
+
+Više detalja ovde: ovde  (BVK source link)
+```
+
+## Repository layout
+
+```
+src/
+	main.ts             # Actor entry point
+	parse-page.ts       # HTML parsing and address extraction logic
+	telegram.ts         # Telegram configuration and delivery helpers
+	telegram-message.ts # HTML message formatter with address de-duplication
+examples/             # Sample HTML fixtures
+
+.actor/               # Actor metadata (input/output schema, dataset views)
+storage/              # Local Apify storage (created at runtime)
+```
