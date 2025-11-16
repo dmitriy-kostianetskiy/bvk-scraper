@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { ParsePageResultItem } from './services/parse-page/parse-page.js';
+import type { ParsePageResultItem } from './parse-page.js';
 import { formatResultsMessage } from './telegram-message.js';
 
 const baseResult: ParsePageResultItem = {

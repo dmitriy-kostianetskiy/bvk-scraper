@@ -1,14 +1,15 @@
 import { Actor } from 'apify';
 
-import { fetchPageService, parsePageService } from './services/services.js';
+import { fetchPage } from './fetch-page.js';
+import { parsePage } from './parse-page.js';
 import { sendResultsToTelegram } from './telegram.js';
 
 await Actor.init();
 // Fetch the HTML content of the page.
-const html = await fetchPageService.fetch();
+const html = await fetchPage();
 
 // Extract all headings from the page (tag name and text).
-const results = parsePageService.parse(html);
+const results = parsePage(html);
 
 await sendResultsToTelegram(results);
 

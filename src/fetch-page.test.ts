@@ -3,9 +3,9 @@ import test from 'node:test';
 
 import axios from 'axios';
 
-import { createFetchPageService } from './fetch-page-service.js';
+import { fetchPage } from './fetch-page.js';
 
-void test('fetchPageService.fetch returns HTML content', async () => {
+void test('fetchPage returns HTML content', async () => {
   const originalGet = axios.get;
   let requestedUrl = '';
 
@@ -15,8 +15,7 @@ void test('fetchPageService.fetch returns HTML content', async () => {
   }) as typeof axios.get;
 
   try {
-    const service = createFetchPageService({ BVK_URL: 'https://example.com' });
-    const html = await service.fetch();
+    const html = await fetchPage('https://example.com');
 
     assert.equal(requestedUrl, 'https://example.com');
     assert.equal(html, '<html>content</html>');

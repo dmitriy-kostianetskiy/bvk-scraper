@@ -35,6 +35,6 @@
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "tsx --test src/**/*.test.ts"
+    "test": "bash -O globstar -c 'npx tsx --test src/**/*.test.ts'"
   }
 }
