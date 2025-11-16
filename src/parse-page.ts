@@ -11,12 +11,38 @@ export type ParsePageResultItem = {
 };
 
 export type ParsedAddress = {
+  municipality: string | null;
   label: string;
   url: string;
 };
 
 const QUESTION_SELECTOR = 'section[itemtype="https://schema.org/Question"]';
 const ANSWER_SELECTOR = '[itemprop="acceptedAnswer"] [itemprop="text"]';
+
+const MUNICIPALITIES = [
+  'Чукарица',
+  'Нови Београд',
+  'Палилула',
+  'Раковица',
+  'Савски венац',
+  'Стари град',
+  'Вождовац',
+  'Врачар',
+  'Земун',
+  'Звездара',
+  'Барајево',
+  'Гроцка',
+  'Лазаревац',
+  'Младеновац',
+  'Обреновац',
+  'Сопот',
+  'Сурчин',
+] as const;
+
+const MUNICIPALITY_PATTERNS = MUNICIPALITIES.map((name) => ({
+  name,
+  regex: new RegExp(`^${escapeRegExp(name)}\\s*:\\s*`, 'i'),
+}));
 
 export function parsePage(html: string): ParsePageResultItem[] {
   const $ = load(html);
@@ -84,17 +110,41 @@ function extractAddresses(
       return;
     }
 
-    const url = buildMapsUrl(label);
-    addresses.push({ label, url });
+    const { municipality, remainder } = extractMunicipality(label);
+    const query = remainder || label;
+    const url = buildMapsUrl(query);
+
+    addresses.push({ municipality, label, url });
   });
 
   return addresses;
+}
+
+function extractMunicipality(label: string): {
+  municipality: string | null;
+  remainder: string;
+} {
+  const trimmed = label.trim();
+
+  for (const { name, regex } of MUNICIPALITY_PATTERNS) {
+    const match = trimmed.match(regex);
+    if (match) {
+      const remainder = trimmed.slice(match[0].length).trim();
+      return { municipality: name, remainder };
+    }
+  }
+
+  return { municipality: null, remainder: trimmed };
 }
 
 function buildMapsUrl(label: string): string {
   const query = label.replace(/[:–]/g, ' ').replace(/\s+/g, ' ').trim();
   const encoded = encodeURIComponent(query).replace(/%20/g, '+');
   return `https://www.google.com/maps/place/${encoded}`;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function extractDate($section: Cheerio<Element>): Date | null {

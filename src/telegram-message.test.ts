@@ -11,12 +11,14 @@ const baseResult: ParsePageResultItem = {
   html: '<ul><li>Example</li></ul>',
   addresses: [
     {
+      municipality: 'Стари град',
       label: 'Стари град: Булевар деспота Стефана 9',
-      url: 'https://www.google.com/maps/place/%D0%A1%D1%82%D0%B0%D1%80%D0%B8+%D0%B3%D1%80%D0%B0%D0%B4+%D0%91%D1%83%D0%BB%D0%B5%D0%B2%D0%B0%D1%80+%D0%B4%D0%B5%D1%81%D0%BF%D0%BE%D1%82%D0%B0+%D0%A1%D1%82%D0%B5%D1%84%D0%B0%D0%BD%D0%B0+9',
+      url: 'https://www.google.com/maps/place/%D0%91%D1%83%D0%BB%D0%B5%D0%B2%D0%B0%D1%80+%D0%B4%D0%B5%D1%81%D0%BF%D0%BE%D1%82%D0%B0+%D0%A1%D1%82%D0%B5%D1%84%D0%B0%D0%BD%D0%B0+9',
     },
     {
+      municipality: 'Савски венац',
       label: 'Савски венац: Војводе Миленка 36',
-      url: 'https://www.google.com/maps/place/%D0%A1%D0%B0%D0%B2%D1%81%D0%BA%D0%B8+%D0%B2%D0%B5%D0%BD%D0%B0%D1%86+%D0%92%D0%BE%D1%98%D0%B2%D0%BE%D0%B4%D0%B5+%D0%9C%D0%B8%D0%BB%D0%B5%D0%BD%D0%BA%D0%B0+36',
+      url: 'https://www.google.com/maps/place/%D0%92%D0%BE%D1%98%D0%B2%D0%BE%D0%B4%D0%B5+%D0%9C%D0%B8%D0%BB%D0%B5%D0%BD%D0%BA%D0%B0+36',
     },
   ],
 };
@@ -29,11 +31,11 @@ void test('formatResultsMessage returns HTML with link footer', () => {
   assert.ok(!message.includes('<b>Detalji:</b>'));
   assert.match(
     message,
-    /<b>Adrese:<\/b>\n• <a href="https:\/\/www\.google\.com\/maps\/place\/[^>]+">Стари град: Булевар деспота Стефана 9<\/a>/,
+    /<b>Adrese:<\/b>\n• <a href="https:\/\/www\.google\.com\/maps\/place\/[^>]+"><b>Стари град<\/b>: Булевар деспота Стефана 9<\/a>/,
   );
   assert.match(
     message,
-    /• <a href="https:\/\/www\.google\.com\/maps\/place\/[^>]+">Савски венац: Војводе Миленка 36<\/a>/,
+    /• <a href="https:\/\/www\.google\.com\/maps\/place\/[^>]+"><b>Савски венац<\/b>: Војводе Миленка 36<\/a>/,
   );
   assert.match(
     message,
@@ -48,6 +50,7 @@ void test('formatResultsMessage escapes HTML special characters', () => {
     text: 'Line with <tag> & "quotes"',
     addresses: [
       {
+        municipality: null,
         label: 'Label with <tag>',
         url: 'https://maps.test/foo?bar="baz"',
       },

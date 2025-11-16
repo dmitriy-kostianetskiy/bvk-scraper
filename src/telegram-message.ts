@@ -58,13 +58,37 @@ function formatAddresses(addresses: ParsePageResultItem['addresses']): string {
     return '';
   }
 
-  const lines = addresses.map(({ label, url }) => {
-    const safeLabel = escapeHtml(label);
-    const safeUrl = escapeHtml(url);
-    return `• <a href="${safeUrl}">${safeLabel}</a>`;
+  const lines = addresses.map((address) => {
+    const safeUrl = escapeHtml(address.url);
+    const displayLabel = formatAddressLabel(address);
+    return `• <a href="${safeUrl}">${displayLabel}</a>`;
   });
 
   return `<b>Adrese:</b>\n${lines.join('\n')}`;
+}
+
+function formatAddressLabel(
+  address: ParsePageResultItem['addresses'][number],
+): string {
+  const { label, municipality } = address;
+
+  if (!municipality) {
+    return escapeHtml(label);
+  }
+
+  const trimmed = label.trim();
+  const prefixPattern = new RegExp(
+    `^${escapeRegExp(municipality)}\\s*[:–-]?\\s*`,
+    'i',
+  );
+  const remainder = trimmed.replace(prefixPattern, '').trim();
+  const safeMunicipality = escapeHtml(municipality);
+
+  if (!remainder) {
+    return `<b>${safeMunicipality}</b>`;
+  }
+
+  return `<b>${safeMunicipality}</b>: ${escapeHtml(remainder)}`;
 }
 
 function buildDetailsSection(
@@ -117,4 +141,8 @@ function stripAddressOnlyLines(
 
 function normalizeLine(line: string): string {
   return line.replace(/\s+/g, ' ').trim();
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
