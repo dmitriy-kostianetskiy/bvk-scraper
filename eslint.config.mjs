@@ -6,25 +6,32 @@ import tsEslint from 'typescript-eslint';
 
 // eslint-disable-next-line import/no-default-export
 export default [
-    { ignores: ['**/dist', 'eslint.config.mjs'] },
-    ...apify,
-    prettier,
-    {
-        languageOptions: {
-            parser: tsEslint.parser,
-            parserOptions: {
-                project: 'tsconfig.json',
-            },
-            globals: {
-                ...globals.node,
-                ...globals.jest,
-            },
-        },
-        plugins: {
-            '@typescript-eslint': tsEslint.plugin,
-        },
-        rules: {
-            'no-console': 0,
-        },
+  { ignores: ['**/dist', 'eslint.config.mjs'] },
+  ...apify,
+  prettier,
+  {
+    languageOptions: {
+      parser: tsEslint.parser,
+      parserOptions: {
+        project: 'tsconfig.json',
+      },
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
     },
+    plugins: {
+      '@typescript-eslint': tsEslint.plugin,
+    },
+    rules: {
+      'no-console': 0,
+      'import/no-extraneous-dependencies': [
+        'error',
+        {
+          packageDir: ['.'],
+          devDependencies: ['**/*.test.ts', '**/*.test.tsx'],
+        },
+      ],
+    },
+  },
 ];

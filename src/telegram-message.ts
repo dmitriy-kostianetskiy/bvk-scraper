@@ -1,4 +1,4 @@
-import type { ParsePageResultItem } from './parse-page.js';
+import type { ParsePageResultItem } from './services/parse-page/parse-page.js';
 
 const DETAILS_URL = 'https://www.bvk.rs/kvarovi-na-mrezi';
 

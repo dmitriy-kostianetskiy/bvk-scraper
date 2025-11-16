@@ -1,16 +1,14 @@
 import { Actor } from 'apify';
-import axios from 'axios';
 
-import { parsePage } from './parse-page.js';
+import { fetchPageService, parsePageService } from './services/services.js';
 import { sendResultsToTelegram } from './telegram.js';
 
 await Actor.init();
-
 // Fetch the HTML content of the page.
-const response = await axios.get(process.env.BVK_URL);
+const html = await fetchPageService.fetch();
 
 // Extract all headings from the page (tag name and text).
-const results = parsePage(response.data);
+const results = parsePageService.parse(html);
 
 await sendResultsToTelegram(results);
 

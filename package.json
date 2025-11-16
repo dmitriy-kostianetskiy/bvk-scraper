@@ -1,7 +1,9 @@
 {
-  "name": "ts-start",
+  "name": "bvk-scraper",
   "version": "0.0.1",
   "type": "module",
+  "author": "Dmitriy Kostianetskiy",
+  "license": "MIT",
   "description": "This is an example of an Apify Actor.",
   "engines": {
     "node": ">=18.0.0"
@@ -9,7 +11,8 @@
   "dependencies": {
     "apify": "^3.4.2",
     "axios": "^1.5.0",
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0-rc.12",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@apify/eslint-config": "^1.0.0",
@@ -32,8 +35,6 @@
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "echo \"Error: oops, the Actor has no tests yet, sad!\" && exit 1"
-  },
-  "author": "It's not you it's me",
-  "license": "ISC"
+    "test": "tsx --test src/**/*.test.ts"
+  }
 }

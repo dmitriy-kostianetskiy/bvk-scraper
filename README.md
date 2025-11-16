@@ -33,6 +33,7 @@ Update the placeholders:
 
 - `BVK_URL` – source page for outages (defaults to the official BVK outage page).
 - `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` – required only if you want Telegram notifications.
+- `TELEGRAM_DRY_RUN` – optional toggle (`true`/`false`) to disable Telegram delivery without removing credentials (defaults to `false`).
 
 2. **Enable automatic env loading with direnv (optional but handy)**
 
@@ -65,6 +66,13 @@ The committed `.envrc` uses `dotenv` so every time you `cd` into the repo, value
   ```
 
 The actor fetches the configured URL, parses outages, sends the Telegram summary when enabled, and pushes structured items to `storage/datasets/default`.
+
+### Environment validation
+
+- Environment variables are validated via [Zod v4](https://zod.dev) (`src/env.ts`).
+- `BVK_URL` is required and must be a non-empty string; the actor exits immediately if it is missing.
+- `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are optional but must be provided together. If only one is set, the validator throws with a descriptive error before any requests are made.
+- `TELEGRAM_DRY_RUN` must be either `true` or `false`. When `true`, the actor logs the parsed outages but skips talking to the Telegram API.
 
 ## Testing
 
